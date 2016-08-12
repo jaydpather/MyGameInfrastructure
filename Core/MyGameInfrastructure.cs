@@ -38,20 +38,28 @@ namespace SamplyGame
 			_scene = new Scene();
 			_scene.CreateComponent<Octree>();
 
-			//var physics = scene.CreateComponent<PhysicsWorld>();
-			//physics.SetGravity(new Vector3(0, 0, 0));
-            
-			var cameraNode = _scene.CreateChild();
-			cameraNode.Position = (new Vector3(0.0f, 0.0f, -10.0f));
-			cameraNode.CreateComponent<Camera>();
+            var planeNode = _scene.CreateChild("Plane");
+            planeNode.Scale = new Vector3(100, 1, 100);
+            var planeObject = planeNode.CreateComponent<StaticModel>();
+            planeObject.Model = ResourceCache.GetModel("Models/Plane.mdl");
+            planeObject.SetMaterial(ResourceCache.GetMaterial("Materials/Grass.xml"));
+
+            var lightNode = _scene.CreateChild("DirectionalLight");
+            lightNode.SetDirection(new Vector3(0.6f, -1.0f, 0.8f));
+            var light = lightNode.CreateComponent<Light>();
+            //var physics = scene.CreateComponent<PhysicsWorld>();
+            //physics.SetGravity(new Vector3(0, 0, 0));
+
+            var cameraNode = _scene.CreateChild("camera");
+            var camera = cameraNode.CreateComponent<Camera>();
+            cameraNode.Position = (new Vector3(0.0f, 5.0f, 0.0f));
 			
-			Renderer.SetViewport(0, Viewport = new Viewport(Context, _scene, cameraNode.GetComponent<Camera>(), null));
+			Renderer.SetViewport(0, Viewport = new Viewport(Context, _scene, camera, null));
             
+
+
             Input.SetMouseVisible(true, false);
             
-            var lightNode1 = _scene.CreateChild();
-            lightNode1.Position = new Vector3(0, 0, -40);
-            lightNode1.AddComponent(new Light { Range = 120, Brightness = 1.5f });
             
             await StartGameTask();
 			
