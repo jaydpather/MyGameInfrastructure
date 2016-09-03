@@ -38,28 +38,38 @@ namespace SamplyGame
 			_scene = new Scene();
 			_scene.CreateComponent<Octree>();
 
-            var planeNode = _scene.CreateChild("Plane");
+            CreateStandardPlane(new Vector3(0, 0, 0), "Materials/MyTexture.xml");
+            CreateStandardPlane(new Vector3(25, -1, 25), "Materials/MyTextureGreen.xml");
+
+            SetupAmbientLight();
+            //CreatePointLight();
+
+            //var physics = scene.CreateComponent<PhysicsWorld>();
+            //physics.SetGravity(new Vector3(0, 0, 0));
+
+            SetupCamera();
+
+            Input.SetMouseVisible(true, false);
+            
+            await StartGameTask();
+			
+            Exit();
+        }
+
+        private StaticModel CreateStandardPlane(Vector3 position, string materialFileName)
+        {
+            var planeNode = _scene.CreateChild("Plane_" + materialFileName);
             planeNode.Scale = new Vector3(100, 1, 100);
-            planeNode.Position = new Vector3(0, 0, 0);
+            planeNode.Position = position;
             var planeObject = planeNode.CreateComponent<StaticModel>();
             planeObject.Model = ResourceCache.GetModel("Models/Plane.mdl");
-            planeObject.SetMaterial(ResourceCache.GetMaterial("Materials/MyTexture.xml"));
+            planeObject.SetMaterial(ResourceCache.GetMaterial(materialFileName));
 
-            var planeNodeGreen = _scene.CreateChild("Plane");
-            planeNodeGreen.Scale = new Vector3(100, 1, 100);
-            planeNodeGreen.Position = new Vector3(25, -1, 25);
-            var planeObjectGreen = planeNodeGreen.CreateComponent<StaticModel>();
-            planeObjectGreen.Model = ResourceCache.GetModel("Models/Plane.mdl");
-            planeObjectGreen.SetMaterial(ResourceCache.GetMaterial("Materials/MyTextureGreen.xml"));
+            return planeObject;
+        }
 
-            var ambientLightNode = _scene.CreateChild("AmbientLight");
-            ambientLightNode.Position = new Vector3(-25, 50, -25);
-            ambientLightNode.SetDirection(new Vector3(0, -1, 0));
-            var ambientLightComponent = ambientLightNode.CreateComponent<Light>();
-            ambientLightComponent.Brightness = 0.5F;
-            ambientLightComponent.LightType = LightType.Directional;
-            ambientLightComponent.FadeDistance = 20;
-
+        private void CreatePointLight()
+        {
             var pointLightNode = _scene.CreateChild("PointLight");
             pointLightNode.Position = new Vector3(50, 2, 50);
             //pointLightNode.SetDirection(new Vector3(0, -1, 0));
@@ -69,27 +79,29 @@ namespace SamplyGame
             pointLightComponent.LightType = LightType.Point;
             pointLightComponent.FadeDistance = 5;
             pointLightComponent.Range = 25;
+        }
 
-            //var physics = scene.CreateComponent<PhysicsWorld>();
-            //physics.SetGravity(new Vector3(0, 0, 0));
-
+        private void SetupCamera()
+        {
             var cameraNode = _scene.CreateChild("camera");
             var camera = cameraNode.CreateComponent<Camera>();
             cameraNode.Position = (new Vector3(50.0f, 100.0f, 0.0f));
             var cameraDirection = new Vector3(0, -1, 0.5f);
             cameraDirection.Normalize();
             cameraNode.SetDirection(cameraDirection);
-			
-			Renderer.SetViewport(0, Viewport = new Viewport(Context, _scene, camera, null));
-            
 
+            Renderer.SetViewport(0, Viewport = new Viewport(Context, _scene, camera, null));
+        }
 
-            Input.SetMouseVisible(true, false);
-            
-            
-            await StartGameTask();
-			
-            Exit();
+        private void SetupAmbientLight()
+        {
+            var ambientLightNode = _scene.CreateChild("AmbientLight");
+            ambientLightNode.Position = new Vector3(0, 100, 0);
+            ambientLightNode.SetDirection(new Vector3(0, -1, 0));
+            var ambientLightComponent = ambientLightNode.CreateComponent<Light>();
+            ambientLightComponent.Brightness = 0.5F;
+            ambientLightComponent.LightType = LightType.Directional;
+            //ambientLightComponent.FadeDistance = 200;
         }
 
         private Task StartGameTask()
