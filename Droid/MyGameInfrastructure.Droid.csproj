@@ -119,9 +119,6 @@
     <AndroidAsset Include="..\Assets\Data\Materials\Enemy3weapon.xml">
       <Link>Assets\Data\Materials\Enemy3weapon.xml</Link>
     </AndroidAsset>
-    <AndroidAsset Include="..\Assets\Data\Materials\Grass.xml">
-      <Link>Assets\Data\Materials\Grass.xml</Link>
-    </AndroidAsset>
     <AndroidAsset Include="..\Assets\Data\Materials\MachineGun.xml">
       <Link>Assets\Data\Materials\MachineGun.xml</Link>
     </AndroidAsset>
@@ -238,6 +235,7 @@
     </AndroidAsset>
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="..\Assets\Data\Materials\MyTexture.xml" />
     <Content Include="UrhoSharpReadme.txt" />
   </ItemGroup>
   <Import Project="..\packages\UrhoSharp.1.0.557\build\MonoAndroid\UrhoSharp.targets" Condition="Exists('..\packages\UrhoSharp.1.0.557\build\MonoAndroid\UrhoSharp.targets')" />

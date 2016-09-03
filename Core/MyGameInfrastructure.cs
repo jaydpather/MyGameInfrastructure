@@ -40,19 +40,45 @@ namespace SamplyGame
 
             var planeNode = _scene.CreateChild("Plane");
             planeNode.Scale = new Vector3(100, 1, 100);
+            planeNode.Position = new Vector3(0, 0, 0);
             var planeObject = planeNode.CreateComponent<StaticModel>();
             planeObject.Model = ResourceCache.GetModel("Models/Plane.mdl");
-            planeObject.SetMaterial(ResourceCache.GetMaterial("Materials/Grass.xml"));
+            planeObject.SetMaterial(ResourceCache.GetMaterial("Materials/MyTexture.xml"));
 
-            var lightNode = _scene.CreateChild("DirectionalLight");
-            lightNode.SetDirection(new Vector3(0.6f, -1.0f, 0.8f));
-            var light = lightNode.CreateComponent<Light>();
+            var planeNodeGreen = _scene.CreateChild("Plane");
+            planeNodeGreen.Scale = new Vector3(100, 1, 100);
+            planeNodeGreen.Position = new Vector3(25, -1, 25);
+            var planeObjectGreen = planeNodeGreen.CreateComponent<StaticModel>();
+            planeObjectGreen.Model = ResourceCache.GetModel("Models/Plane.mdl");
+            planeObjectGreen.SetMaterial(ResourceCache.GetMaterial("Materials/MyTextureGreen.xml"));
+
+            var ambientLightNode = _scene.CreateChild("AmbientLight");
+            ambientLightNode.Position = new Vector3(-25, 50, -25);
+            ambientLightNode.SetDirection(new Vector3(0, -1, 0));
+            var ambientLightComponent = ambientLightNode.CreateComponent<Light>();
+            ambientLightComponent.Brightness = 0.5F;
+            ambientLightComponent.LightType = LightType.Directional;
+            ambientLightComponent.FadeDistance = 20;
+
+            var pointLightNode = _scene.CreateChild("PointLight");
+            pointLightNode.Position = new Vector3(50, 2, 50);
+            //pointLightNode.SetDirection(new Vector3(0, -1, 0));
+            var pointLightComponent = pointLightNode.CreateComponent<Light>();
+            pointLightComponent.Brightness = 2.0F;
+            pointLightComponent.Color = Color.White;
+            pointLightComponent.LightType = LightType.Point;
+            pointLightComponent.FadeDistance = 5;
+            pointLightComponent.Range = 25;
+
             //var physics = scene.CreateComponent<PhysicsWorld>();
             //physics.SetGravity(new Vector3(0, 0, 0));
 
             var cameraNode = _scene.CreateChild("camera");
             var camera = cameraNode.CreateComponent<Camera>();
-            cameraNode.Position = (new Vector3(0.0f, 5.0f, 0.0f));
+            cameraNode.Position = (new Vector3(50.0f, 100.0f, 0.0f));
+            var cameraDirection = new Vector3(0, -1, 0.5f);
+            cameraDirection.Normalize();
+            cameraNode.SetDirection(cameraDirection);
 			
 			Renderer.SetViewport(0, Viewport = new Viewport(Context, _scene, camera, null));
             
