@@ -22,5 +22,15 @@ namespace MyGameInfrastructure
         {
             return (float)Math.Atan2(y, x);
         }
+
+        private static float RadianToDegree(float angle)
+        {
+            return angle * (180.0f / (float)Math.PI);
+        }
+
+        private static float DegreeToRadian(float angle)
+        {
+            return (float)Math.PI * angle / 180.0f;     
+        }
     }
 }

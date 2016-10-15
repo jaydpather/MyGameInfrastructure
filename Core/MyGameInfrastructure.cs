@@ -13,6 +13,7 @@ namespace MyGameInfrastructure
 		Scene _scene;
         private Camera _camera;
         private Vector3 _cameraDirection;
+        private Text _text;
         //private bool _isMouseDown = false;
         private TaskCompletionSource<bool> _liveTask;
 
@@ -78,6 +79,13 @@ namespace MyGameInfrastructure
             //var physics = scene.CreateComponent<PhysicsWorld>();
             //physics.SetGravity(new Vector3(0, 0, 0));
 
+            _text = new Text();
+            _text.Value = "This is my text.";
+            _text.SetColor(new Color(1, 0, 0, 1));
+            _text.HorizontalAlignment = HorizontalAlignment.Left;
+            _text.SetFont(ResourceCache.GetFont("Fonts/Font.ttf"), Graphics.Width / 40);
+            UI.Root.AddChild(_text);
+
             SetupCamera();
 
             Input.SetMouseVisible(true, false);
@@ -129,10 +137,13 @@ namespace MyGameInfrastructure
         {
             var cameraNode = _scene.CreateChild("camera");
             var _camera = cameraNode.CreateComponent<Camera>();
-            //camera.Type
+
             cameraNode.Position = (new Vector3(0.0f, 0.0f, -200.0f));
-            _cameraDirection = new Vector3(0, 0, 1.0f);
-            
+            _cameraDirection = new Vector3(0.0f, 0, 1.0f);
+
+            //cameraNode.Position = (new Vector3(-200.0f, 0.0f, 0.0f));
+            //_cameraDirection = new Vector3(1.0f, 0, 0.0f);
+
             _cameraDirection.Normalize();
             cameraNode.SetDirection(_cameraDirection);
 
@@ -155,26 +166,21 @@ namespace MyGameInfrastructure
             return _liveTask.Task;
         }
 
-        protected override void OnUpdate(float timeStep)
+        private void SetCameraPosition()
         {
             const float speed = 0.5f;
 
-            if (Input.GetMouseButtonDown(MouseButton.Left) || Input.NumTouches > 0)
-            {
-                _liveTask.SetResult(true);
-            }
-
-
             var headingAngle = MyMath.Atan2(_cameraDirection.Z, _cameraDirection.X);
+            var verticalAngle = MyMath.Atan2(_cameraDirection.Y, 1);
             var zDir = MyMath.Sin(headingAngle);
             var xDir = MyMath.Cos(headingAngle);
             var cameraPositionDelta = new Vector3();
-            if(Input.GetKeyDown(Key.W))
+            if (Input.GetKeyDown(Key.W))
             {
                 cameraPositionDelta.X += speed * xDir;
                 cameraPositionDelta.Z += speed * zDir;
             }
-                
+
 
             if (Input.GetKeyDown(Key.S))
             {
@@ -183,13 +189,13 @@ namespace MyGameInfrastructure
             }
 
             if (Input.GetKeyDown(Key.A))
-            { 
+            {
                 cameraPositionDelta.X -= speed * zDir;
                 cameraPositionDelta.Z += speed * xDir;
             }
 
             if (Input.GetKeyDown(Key.D))
-            { 
+            {
                 cameraPositionDelta.X += speed * zDir;
                 cameraPositionDelta.Z -= speed * xDir;
             }
@@ -203,56 +209,62 @@ namespace MyGameInfrastructure
             {
                 cameraPositionDelta.Y -= speed;
             }
-
-            if (Input.MouseMove.X != 0 || Input.MouseMove.Y != 0)
-            {
-                const float SCALING_FACTOR = 0.01f;
-                float xzRotationDelta = -Input.MouseMove.X * SCALING_FACTOR; 
-                float zyRotationDelta = -Input.MouseMove.Y * SCALING_FACTOR; 
-
-
-                //x-axis rotation (looking up and down)
-                _cameraDirection = Vector3.TransformNormal(_cameraDirection,
-                    new Matrix4
-                    {
-                        Row0 = new Vector4(1, 0, 0, 0),
-                        Row1 = new Vector4(0, MyMath.Cos(zyRotationDelta), -MyMath.Sin(zyRotationDelta), 0),
-                        Row2 = new Vector4(0, MyMath.Sin(zyRotationDelta), MyMath.Cos(zyRotationDelta), 0),
-                        Row3 = new Vector4(0, 0, 0, 1),
-                    });
-
-                //y-axis rotation (looking left and right)
-                _cameraDirection = Vector3.TransformNormal(_cameraDirection,
-                    new Matrix4
-                    {
-                        Row0 = new Vector4(MyMath.Cos(xzRotationDelta), 0, MyMath.Sin(xzRotationDelta), 0),
-                        Row1 = new Vector4(0, 1, 0, 0),
-                        Row2 = new Vector4(-MyMath.Sin(xzRotationDelta), 0, MyMath.Cos(xzRotationDelta), 0),
-                        Row3 = new Vector4(0, 0, 0, 1),
-                    });     
-
-                //z-axis rotation (roll)
-                //_cameraDirection = Vector3.TransformNormal(_cameraDirection,
-                //   new Matrix4
-                //   {
-                //       Row0 = new Vector4(MyMath.Cos(xzRotationDelta), -MyMath.Sin(xzRotationDelta), 0, 0),
-                //       Row1 = new Vector4(MyMath.Sin(xzRotationDelta), MyMath.Cos(xzRotationDelta), 0, 0),
-                //       Row2 = new Vector4(0, 0, 1, 0),
-                //       Row3 = new Vector4(0, 0, 0, 1),
-                //   });
-
-                Viewport.Camera.Node.SetDirection(_cameraDirection);
-            }
-                    
-
-            //Vector3.Transform()
-
-            //cameraPositionDelta.Normalize();
             Viewport.Camera.Node.Position += cameraPositionDelta;
+
+        }
+
+        private void SetCameraRotation()
+        {
+            const float rotationSpeed = 0.15f;
+            float leftRightRotationDelta = 0.0f;
+            float upDownRotationDelta = 0.0f;
+
+            if (Input.GetKeyDown(Key.Left))
+                leftRightRotationDelta -= rotationSpeed;
+            if (Input.GetKeyDown(Key.Right))
+                leftRightRotationDelta += rotationSpeed;
+
+            if (Input.GetKeyDown(Key.Up))
+                upDownRotationDelta -= rotationSpeed;
+            if (Input.GetKeyDown(Key.Down))
+                upDownRotationDelta += rotationSpeed;
+
+            var rotationQuaternion = Viewport.Camera.Node.Rotation;
+            var originalPitchAngle = rotationQuaternion.PitchAngle;
+
+            //pitch must be "zeroed out" before we yaw
+            Viewport.Camera.Node.Pitch(-originalPitchAngle, TransformSpace.Local);
+
+            Viewport.Camera.Node.Yaw(leftRightRotationDelta, TransformSpace.Local);
+
+            //now set pitch back to its original angle before applying rotation delta for this frame
+            Viewport.Camera.Node.Pitch(originalPitchAngle, TransformSpace.Local);
+            Viewport.Camera.Node.Pitch(upDownRotationDelta, TransformSpace.Local);
+
+            _cameraDirection = Viewport.Camera.Node.Direction;
+        }
+
+        private void DisplayCameraRotationInfo()
+        {
+            var rotationQuaternion = Viewport.Camera.Node.Rotation;
+            _text.Value = string.Format("Yaw: {1}{0}Pitch: {2}{0}Roll: {3}", Environment.NewLine, rotationQuaternion.YawAngle, rotationQuaternion.PitchAngle, rotationQuaternion.RollAngle);
+            _text.Value += Environment.NewLine + Environment.NewLine;
+            _text.Value += string.Format("X:{1}{0}Y:{2}{0}Z:{3}", Environment.NewLine, rotationQuaternion.X, rotationQuaternion.Y, rotationQuaternion.Z);
+        }
+
+        protected override void OnUpdate(float timeStep)
+        {
+            if (Input.GetMouseButtonDown(MouseButton.Left) || Input.NumTouches > 0)
+            {
+                _liveTask.SetResult(true);
+            }
+
+            SetCameraPosition();
+            SetCameraRotation();
+            DisplayCameraRotationInfo();
             Renderer.SetViewport(0, Viewport);
             
-            //base.OnUpdate(timeStep);
+            base.OnUpdate(timeStep);
         }
-        
-	}
+    }
 }
