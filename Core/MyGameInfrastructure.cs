@@ -3,6 +3,7 @@ using Urho;
 using Urho.Gui;
 using Urho.Actions;
 using System;
+using Urho.Audio;
 
 namespace MyGameInfrastructure
 {
@@ -14,6 +15,8 @@ namespace MyGameInfrastructure
         private Camera _camera;
         private Vector3 _cameraDirection;
         private Text _text;
+        private Node _soundNode;
+
         //private bool _isMouseDown = false;
         private TaskCompletionSource<bool> _liveTask;
 
@@ -89,7 +92,11 @@ namespace MyGameInfrastructure
             SetupCamera();
 
             Input.SetMouseVisible(true, false);
-            
+
+            _soundNode = _scene.CreateChild("soundNode");
+
+            PlaySound();
+
             await StartGameTask();
 			
             Exit();
@@ -265,6 +272,17 @@ namespace MyGameInfrastructure
             Renderer.SetViewport(0, Viewport);
             
             base.OnUpdate(timeStep);
+        }
+
+        private void PlaySound()
+        {
+            SoundSource soundSource = _soundNode.CreateComponent<SoundSource>();
+            
+            soundSource.Play(soundSource.Application.ResourceCache.GetSound("Sounds/BigExplosion.wav"));
+            soundSource.Gain = 0.3f;
+            _soundNode.Position = new Vector3(0, 0, 0);
+            _soundNode.SetScale(1.6f);
+
         }
     }
 }
